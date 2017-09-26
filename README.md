@@ -68,3 +68,10 @@ physics only on pointer capture etc sooner rather than later.  I would love to s
 Sincerely,
 
 jason
+
+
+Here is a codepen demo of the first widget.  About half the buttons work.
+
+https://codepen.io/jfrazz/live/gGmYEM
+
+goals for the week, add layout for full screen, calendar, todos, dayscedule and schedulemaking interfaces.  All written just need to be "shrunk"
