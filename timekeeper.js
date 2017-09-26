@@ -1,13 +1,10 @@
 var junk=(function(){
-	
-var dataObjectForReducer={};
-	
-	
 	class TimeKeeper{
 		constructor(){
 			this.digi=[];
 			this.proxy={};
 			this.proxy.select={};
+			this.ispageturninit=0;
 			var startclocks=[
 				{"name": "localTime","index": 0, "type":"clock","originalSetting":"time","display":this.timeDisplay,"key":"symbol","bitmask": 5,"increment":1000 },{"name": "satReading","index": 1,"alertcolor":"aqua","type": "countdown","key":"symbol","originalSetting":[0,0,6,5,0,0,0,0],"display":[0,0,6,5,0,0,0,0], "bitmask":2 },{"name": "satLongMath","alertcolor":"yellow","type": "countdown","originalSetting":[0,0,5,5,0,0,0,0],"display":[0,0,5,5,0,0,0,0], "bitmask":2 ,"increment":0},{"name": "satGrammar", "alertcolor":"purple","type": "countdown","originalSetting":[0,0,3,5,0,0,0,0],"display":[0,0,3,5,0,0,0,0], "bitmask":2 ,"increment":0},{"name": "satShortMath", "alertcolor":"red","type": "countdown","originalSetting":[0,0,2,5,0,0,0,0],"display":[0,0,2,5,0,0,0,0], "bitmask":2 ,"increment":0},{"name": "testDayAlarm","type": "alarm", "alertcolor":"pink","originalSetting":[0,6,5,9,0,0,"A","M"],"display":[0,6,5,9,0,0,"A","M"],"bitmask": 6 ,"increment":10},{"name": "NewAlarm","alertcolor":"orange","type": "alarm", "originalSetting":[0,5,3,5,0,0,"P","M"],	"display":[0,5,3,5,0,0,"P","M"],"bitmask": 6 ,"increment":30},{"name": "LaterAlarm","alertcolor":"goldenrod", "type": "alarm","originalSetting":[0,7,3,5,0,0,"A","M"], "display":[0,7,3,5,0,0,"A","M"], "bitmask": 6, "increment":30},{"name": "stopwatch","type": "stopwatch","originalSetting":[0,0,0,0,0,0,0,0],"display":[0,0,0,0,0,0,0,0],"bitmask": 0 ,"increment":30},{"name": "stopwatch2","type": "stopwatch","originalSetting":[0,0,0,0,0,0,0,0],"display":[0,0,0,0,0,0,0,0],"bitmask": 0,"increment":30}
 			];
@@ -41,7 +38,7 @@ var dataObjectForReducer={};
 				},
 			"index":{
 						"enumberable":true,"configurable":true, 
-						"get":function(){return index&&index>-1&&index<this.timers._("last")?index:(index=0,index)
+						"get":function(){return index&&index>-1&&index<Math.floor(this.timerNames.length-1)?index:(index=0,index)
 						},
 						"set":function(bool){
 							
@@ -50,7 +47,8 @@ var dataObjectForReducer={};
 						:arrayincrementor(index?index:0,c, bool, 1);
 							this.datadisplay.innerHTML+=index;
 							this.methods.updateCurrentName();
-							window.setTimeout(()=>{this.datadisplay.innerHTML+=JSON.stringify(this.selected);this.selected.endTime;}, 3)
+							window.setTimeout(()=>{this.datadisplay.innerHTML+=JSON.stringify(this.selected);this.selected.endTime;
+																		this.ispageturninit=0;}, 3)
 						},
 					},	
 			"selected":{
@@ -121,13 +119,16 @@ var dataObjectForReducer={};
 			"display":{
 						get:function(){	return this.digi.map(a=>{return a.value});},
 						set:function(value){
-										this.selected.display 
+							this.selected.bitmask%2!==0||this.ispageturninit===0?this.selected.display 
 										=	Array.isArray(value)?value.map((v,i)=>{
 										context.digi[i].value=v; 
 										return v;
 									})
-										:context.digi.map(a=>{return a.value});
-								}	
+										:context.digi.map(a=>{return a.value}):context.digi.map(a=>{return a.value});
+							this.pageturninit++;
+							
+			//			
+						}	
  				},
 			"displayToHundredths":{
 								"get":function(){
@@ -150,15 +151,26 @@ var dataObjectForReducer={};
 						console.log(name)
 						name.value=propertyNameToLabel(this.timerNames[index]);
 					},
-					"set":()=>{console.log(this.selected.name, "set")},
-					"delete":()=>{
-						console.log(this.selected.name, this.selected.originalSetting,"delete");
+					"set":()=>{
+						this.selected.bitmask<4&&this.selected.bitmask%2!==0?this.toggleOnOff:"";
+						this.selected.bitmask!==5?this.selected.display=this.counterInputs.map(a=>true? a.value:a.value): " ";
+						
 					},
+					"delete":()=>{
+						
+						if(this.selected.bitmask!==5){
+									this.selected.bitmask===1||this.selected.bitmask===3?this.toggleOnOff:"";
+						this.displaysMap.delete(this.selected.name);
+						this.timerNames.splice(index, 1);
+
+							index=0;
+					}},
 					"new":()=>{console.log(this.selected.name, this.selected.originalSetting,"new");},
 					"clear":()=>{
+						this.ispageturninit=0
 						if(this.selected.bitmask===6)
 						{
-							this.selected.display=[1,2,0,0,0,0,"A","M"];
+							this.display=this.selected.display=[1,2,0,0,0,0,"A","M"];
 						}
 						else if(this.selected.bitmask===5)
 						{
@@ -167,19 +179,22 @@ var dataObjectForReducer={};
 						else{
 							if(this.selected.bitmask===1||this.selected.bitmask===3)
 							{this.toggleOnOff;}
-							this.selected.display=[0,0,0,0,0,0,0,0];
+							this.display=this.selected.display=[0,0,0,0,0,0,0,0];
 							
 						}
+						this.endTime;
 					},
 					"off":()=>{console.log(this.selected.name, this.selected.originalSetting,"off");},
 					"event":()=>{console.log(this.selected.name, this.selected.originalSetting,"event");},
 					"date":()=>{console.log(this.selected.name, this.selected.originalSetting,"date", "launch calendar");},
 					"todos":()=>{console.log(this.selected.name, this.selected.originalSetting,"todos");},
 					"reset":()=>{
+						this.ispageturninit=0
 						if(this.selected.bitmask===1||this.selected.bitmask===3)
 							{this.toggleOnOff;}
 						console.log(this.selected.name, this.selected.originalSetting,"reset");
-						this.selected.display=this.selected.originalSetting;
+					this.selected.display=	this.display=this.selected.originalSetting.map(a=>true?a:a);
+						
 					},
 					"fromHundredths":(hundredths)=>{
 								var hundredths=parseInt(hundredths);
@@ -223,14 +238,16 @@ var dataObjectForReducer={};
 								get:function(){
 									return {
 										short:()=>{
+											this.ispageturninit=0;
 										let	last=Math.floor(this.alarmArchive.length-1);
 											let htime=last>-1?(window.clearInterval(last), false):true;
 											this.key=window.setInterval(()=>{
 													let b=this.selected.bitmask;
-												this.display=b==5?this.timeDisplay
-												:b==1?this.methods.fromHundredths(Math.floor(this.now-this.selected.endTime))
-												:b==3?this.methods.fromHundredths(Math.floor(this.selected.endTime-this.now))
-												:this.selected.display;
+												b==5?this.display=this.timeDisplay
+												:b==1?this.display=this.methods.fromHundredths(Math.floor(this.now-this.selected.endTime))
+												:b==3?this.display=this.methods.fromHundredths(Math.floor(this.selected.endTime-this.now))
+												:this.ispageturninit===0?this.display=this.selected.display:"";
+												this.ispageturninit++;
 												let timer=document.querySelector("input[id^='time_clockHeaderSections_2_']");
 												
 												timer.value=new Date().toLocaleTimeString();
